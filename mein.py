@@ -4,6 +4,19 @@ from pygame import*
 init()
 
 W, H = 500, 700
+FPS = 60
+
+mixer.init()
+mixer.music.load('sounds/space.ogg')
+mixer.music.set_volume(0.2)
+mixer.music.play()
+
+fire_snd = mixer.Sound('sounds/fire.ogg')
+
+font.init()
+font1 = font.SysFont('fonts/Bebas_Neue_Cyrillic.ttf', 35, bold=True)
+font2 = font.SysFont('fonts/Bebas_Neue_Cyrillic.ttf', 35, bold=True)
+
 
 window = display.set_mode((W, H))
 display.set_caption("Shooter")
@@ -94,7 +107,10 @@ while game:
             game = False
         if e.type == KEYDOWN:
             if e.key == K_SPACE:
+                fire_snd.play()
                 player.fire()
+        
+    
 
     window.blit(bg, (0, 0))
     player.draw()
@@ -109,25 +125,38 @@ while game:
     bullets.draw(window)
     bullets.update()
 
-    if sprite.groupcollide(bullets, enemies, True, True):
+    if sprite.groupcollide(bullets, enemies, True, True):  #зіткнення куль з ворогами
         killed += 1
         enemy = Enemy(randint(0, W - 70), randint(-35, 10), 70, 35, randint(1, 3), 'images/ufo.png')
         enemies.add(enemy)
 
-    if sprite.groupcollide(bullets, asteroids, True, False):
+    if sprite.groupcollide(bullets, asteroids, True, False): #зіткнення куль з астероїдами
         pass
 
-    if sprite.spritecollide(player, asteroids, True):
+    if sprite.spritecollide(player, asteroids, True): #зіткнення гравця з астероїдами
         life -= 1
         asteroid = Asteroid(randint(0, W - 70), randint(-35, 10), 70, 35, randint(1, 3), 'images/asteroid.png')
         asteroids.add(asteroid)
+        
+    if life == 0:
+        game = False
+        
 
-    if sprite.spritecollide(player, enemies, True):
+    if sprite.spritecollide(player, enemies, True): #зіткнення гравця з ворогами
         life -= 1
         enemy = Enemy(randint(0, W - 70), randint(-35, 10), 70, 35, randint(1, 3), 'images/ufo.png')
         enemies.add(enemy)
+        
 
+    skipped_txt = font1.render(f'Пропущено: {skipped}', True, (255, 255, 255))
+    window.blit(skipped_txt, (10, 10))
+
+    killed_txt = font2.render(f'Вбиті: {killed}', True, (255, 100, 255))
+    window.blit(killed_txt, (10, 35))
+
+    life_txt = font2.render(f'Життя: {life}', True, (255, 255, 150))
+    window.blit(life_txt, (10, 60))
 
 
     display.update()
-    clock.tick(60)
+    clock.tick(FPS)
